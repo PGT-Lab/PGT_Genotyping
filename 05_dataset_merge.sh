@@ -1,3 +1,17 @@
+# Define variables path and name
+gsa1=/path/to/gsa1
+gsa2=/path/to/gsa2
+gsa3=/path/to/gsa3
+gsa4=/path/to/gsa4
+gsa5=/path/to/gsa5
+gsa1_new=/path/to/gsa1_new
+gsa2_new=/path/to/gsa2_new
+gsa3_new=/path/to/gsa3_new
+gsa4_new=/path/to/gsa4_new
+gsa5_new=/path/to/gsa5_new
+gsa_path=/path/to/gsa_path
+gsa_merged=/path/to/gsa_merged
+
 # Step 1: Remove duplicate variants from each dataset and generate a list of SNPs
 plink --bfile "$gsa1" --list-duplicate-vars --out "$gsa1_new"  # Identify duplicate variants in dataset 1
 plink --bfile "$gsa1" --exclude "$gsa1_new".dupvar --make-bed --out "$gsa1_new"_nodup  # Exclude duplicate variants

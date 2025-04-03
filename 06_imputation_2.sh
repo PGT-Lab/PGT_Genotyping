@@ -1,3 +1,9 @@
+# Define variables path and name
+plink_file=/path/to/plink_file
+liftover=/path/to/liftover
+path_file=/path/to/path_file
+output=/path/to/output
+
 # Step 1: Exclude problematic regions (novel CUPs) from the dataset and convert chromosomes to PLINK format.
 plink --bfile "$plink_file" --exclude range "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed --output-chr M --make-bed --out "$plink_file"_del1
 

@@ -31,7 +31,7 @@ For further enquiries, please refer to the authors listed below:
 
 ---
 
-# 1. IDAT to PLINK:
+# 1. IDAT to PLINK
 
 ![](https://github.com/ccmaues/pgt_images_github/blob/main/01_idat_to_vcf.png?raw=true)
 
@@ -90,7 +90,7 @@ plink --vcf "$out_prefix" --const-fid --update-sex "$sex_file" --make-bed --out 
 
 ---
 
-# 2. LiftOver:
+# 2. LiftOver
 
 ![](https://github.com/ccmaues/pgt_images_github/blob/main/02_lift_over.png?raw=true)
 <!---
@@ -145,60 +145,52 @@ install.package("plyr")
 
 ---
 
-# 4. Quality control
+# 4. Quality control 1
 
-<!---
-put i here a figure showing the "steps" done
---->
+![](https://raw.githubusercontent.com/ccmaues/pgt_images_github/refs/heads/main/05_QC.png)
 
 Quality control (QC) is critical in genetic studies to ensure data reliability by removing poor-quality samples and variants. This QC step was applied to avoid **false associations, population stratification bias, or spurious results**, compromising study validity. T the parameters values were the same as in RICOPILI pipeline, with the addition of relatedness filter.
 
+<!---
+add refs here for QC
+--->
+
 *Main Commands:*
-
-### **0. Update phenotype and FID:**
-
-Important for posterior steps.
-
-```{bash}
-plink --bfile "$genotyped_data$" --pheno updated_phenotype.txt --pheno-merge --make-bed --out "$genotyped_data$"_pheno
-plink --bfile "$genotyped_data$"_pheno --update-ids updated_FIDs.txt --make-bed --out  "$genotyped_data$"_pheno_FID
-```
 
 ### **1. SNV filter:**
 
 ```{bash}
-plink --bfile "$genotyped_file" --maf 0.01 --geno 0.02 --hwe 1e-10  --make-bed --out ../QCed_hg19/"$genotyped_file"_QC
+plink --bfile "$genotyped_data" --maf 0.01 --geno 0.02 --hwe 1e-10  --make-bed --out "$genotyped_data"_QC
 ```
 
 ### **2. Sample filter:**
 
 ```{bash}
-plink --bfile "$genotyped_file"_QC --mind 0.02 --make-bed --out "$genotyped_file"_QC_mind
+plink --bfile "$genotyped_data"_QC --mind 0.02 --make-bed --out "$genotyped_data"_QC_mind
 ```
 had split x?
 
-### **3. Only monomorphic SNVs:**
+### **3. Keep only ATGC SNVs:**
 
 ```{bash}
-plink --bfile "$genotyped_file"_QC_mind --snps-only just-acgt --make-bed --out "$genotyped_file"_QC_mind_ACTG
+plink --bfile "$genotyped_data"_QC_mind --snps-only just-acgt --make-bed --out "$genotyped_data"_QC_mind_ACTG
 ```
 
 ### **4. Idendity by Descent**
 
 ```{bash}
-plink --bfile "$genotyped_file"_QC_mind_ACTG --genome --min 0.2 --out ibd_calculation
+plink --bfile "$genotyped_data"_QC_mind_ACTG --genome --min 0.2 --out ibd_calculation
 ```
 
-### **5. Heterozigosity filter:**
+### **5. Heterozigosity and missingness filter:**
+<!---
+Wheres the pruning?
+--->
 
 ```{bash}
-plink --bfile "$genotyped_file"_semXY --missing --out indiv_missing
-plink --bfile "$genotyped_file"_semXY --het --out hetero
+plink --bfile "$genotyped_data"_QC_mind_ACTG --missing --out indiv_missing
+plink --bfile "$genotyped_data"_QC_mind_ACTG --het --out hetero
 ```
-
-### **6. Heterozigosity and missingness filter:**
-
-Pq não fazer no PLINK logo com o geno e/ou mind?
 
 ```{R}
 imiss_rem <- subset(imiss, imiss$F_MISS > 0.03)[, 1:2]
@@ -206,8 +198,30 @@ het_rem <- subset(het, het$P_HET > upper_3sd | het$P_HET < lower_3sd)[, 1:2]
 ```
 
 ```{bash}
-plink --bfile ptsd_genotype_QC_semXY --remove fail-imisshet-qc.txt --make-bed --out ptsd_semhet
+plink --bfile "$genotyped_data"_QC_mind_ACTG --remove fail-imisshet-qc.txt --make-bed --out "$genotyped_data"_semhet
 ```
+
+### **7. sex check:**
+
+```{bash}
+plink --bfile "$genotyped_data"_semhet --sex-check --out check_XY
+grep PROBLEM check_XY.sexcheck | awk '{print $1, $2}' > check_sex_fail.txt
+plink --bfile "$genotyped_data"_semhet --remove check_sex_fail.txt --make-bed --out "$genotyped_data"_QCed
+```
+
+<!---
+put info later
+--->
+
+| Dataset | SNV | Sample | ATGC SNVs | IBD | Heterozygosity | Missingness | Sex-check |
+| -------- | --- | --- | --- | --- | --- | --- | --- |
+| PC_Kings_2016_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| PI_ESALQ_2020 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| PSC_Kings_2019 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| PSC_Kings_2016_2019 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| TP_USP_2020 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| SC_CHOP_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| PS_CHOP_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ---
 
@@ -220,29 +234,29 @@ The merged was performed only with the inteserction of SNVs in pairs of datasets
 ### **1. SNV list:**
 
 ```{bash}
-plink --bfile "$psych1" --list-duplicate-vars --out "$psych1_new"
-plink --bfile "$psych1" --exclude "$psych1_new".dupvar --make-bed --out "$psych1_new"_nodup
-plink --bfile "$psych1_new"_nodup --write-snplist --out "$psych1_new"_nodup
-sort -o "$psych1_new"_nodup.snplist "$psych1_new"_nodup.snplist
+plink --bfile "$dataset1" --list-duplicate-vars --out "$dataset1_new"
+plink --bfile "$dataset1" --exclude "$dataset1_new".dupvar --make-bed --out "$dataset1_new"_nodup
+plink --bfile "$dataset1_new"_nodup --write-snplist --out "$dataset1_new"_nodup
+sort -o "$dataset1_new"_nodup.snplist "$dataset1_new"_nodup.snplist
 ```
 
 ### **2. Common SNVs between datasets:**
 
 ```{bash}
-comm -12 "$psych1_new"_nodup.snplist "$psych2_new"_nodup.snplist > "$psych_merged".snplist
-plink --bfile "$psych1_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$psych1_new"_nodup_common
-plink --bfile "$psych2_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$psych2_new"_nodup_common
+comm -12 "$dataset1_new"_nodup.snplist "$dataset2_new"_nodup.snplist > "$psych_merged".snplist
+plink --bfile "$dataset1_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$dataset1_new"_nodup_common
+plink --bfile "$dataset2_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$dataset2_new"_nodup_common
 ```
 
 ### **3. FID update:**
 
 ```{bash}
-awk '{print $1, $2, "1", $2}' "$psych2_new"_nodup_common.fam > "$psych2_new"_updatefids.txt
-plink --bfile "$psych2_new"_nodup_common --update-ids "$psych2_new"_updatefids.txt --make-bed --out "$psych2_new"_nodup_common_fid1
+awk '{print $1, $2, "1", $2}' "$dataset2_new"_nodup_common.fam > "$dataset2_new"_updatefids.txt
+plink --bfile "$dataset2_new"_nodup_common --update-ids "$dataset2_new"_updatefids.txt --make-bed --out "$dataset2_new"_nodup_common_fid1
 ```
 
 ```{bash}
-plink --bfile "$psych1_new"_nodup_common --bmerge "$psych2_new"_nodup_common_fid1 --make-bed --out "$psych_merged"
+plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common_fid1 --make-bed --out "$psych_merged"
 ```
 
 ---
@@ -250,6 +264,10 @@ plink --bfile "$psych1_new"_nodup_common --bmerge "$psych2_new"_nodup_common_fid
 # 6. Imputation QC:
 
 Prior to imputation, we applied scripts and steps from [TOPMed's Imputation Server](https://topmedimpute.readthedocs.io/en/latest/prepare-your-data/) to prepare the merged data for imputation. This included checking the data for compatibility with the HRC reference panel, filtering variants, and ensuring that the data was in the correct format for imputation.
+
+<!---
+Put parameters of imputation here
+--->
 
 *External files to use:*
 ```{bash}
@@ -313,55 +331,33 @@ for i in {1..22} X; do
 done
 ```
 
-Omni - Number of variants excluded for the imputation preparation
+*Removal*
+| Dataset | liftover | Excluded | Unsolved | Allele mismatch | TOPMed QC | Final |
+| -------- | --- | --- | --- | --- | --- | --- |
+| GSA | 253 | 16593 | 1720 | 13 | 6618 |
+| PSYCH | 768 | 9428 | 4043 | 28 | 4061 |
+| OMNI | 824 | 19046 | 1437 | 48 | 10800 | 639434 |
 
-671589 - 824 (excluded on liftover)
+<!---
+put info later
+--->
 
-670765 - 19046 (excluded on the HRC prep program)
-
-651719 - 1437 (unsolved variants from +fixref)
-
-650282 - 48 (excluded during imputation QC - allele mismatch)
-
-650234 - 10800 (excluded during imputation QC - typed only sites)
-
-639434 (Final)
-
-Psych - Number of variants excluded for the imputation preparation
-
-309810 - 768 (excluded on liftover)
-
-309042 - 9428 (excluded on the HRC prep program)
-
-299614 - 4043 (unsolved variants from +fixref)
-
-295571 - 28 (excluded during imputation QC - allele mismatch)
-
-295543 - 4061 (excluded during imputation QC - typed only sites)
-
-291482 (Final)
-
-GSA - Number of variants excluded for the imputation preparation
-
-350352 - 253 (excluded on liftover)
-
-350099 - 16593 (excluded on the HRC prep program)
-
-333506 - 1720 (unsolved variants from +fixref)
-
-331786 - 13 (excluded during imputation QC - allele mismatch)
-
-331773 - 6618 (excluded during imputation QC - typed only sites)
-
-325155 (Final)
+*SNVs and samples per dataset*
+| Dataset | Initial | Final |
+| -------- | --- | --- |
+| GSA | 0 | 325155 |
+| PSYCH | 0 | 291482 |
+| OMNI | XXXX | 639434 |
 
 ---
 
-# 7. QC post imputation:
+# 7. QC post imputation
 
-Summary
+The INFO score is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Minimac4` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the INFO score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
 
-pergunta: ficou 0.7 ou 0.8 INFO?
+<!---
+maybe a ref here...?
+--->
 
 *Main Command:*
 
@@ -396,7 +392,7 @@ Summary
 
 ---
 
-# 9. XXX
+# 9. Quality control 2
 
 Summary
 
@@ -412,7 +408,7 @@ Summary
 
 ---
 
-# 10. XXX
+# 10. Cohort separation
 
 Summary
 

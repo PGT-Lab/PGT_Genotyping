@@ -4,6 +4,17 @@ export PATH="$HOME/bin:$PATH"
 # Set the BCFTOOLS_PLUGINS environment variable to point to the user's bin directory, where bcftools plugins are located.
 export BCFTOOLS_PLUGINS="$HOME/bin"
 
+# Define variables path and name
+path_to_idat_folder=/path/to/idat_folder
+bpm_manifest_file=/path/to/bpm_manifest_file
+egt_cluster_file=/path/to/egt_cluster_file
+path_to_gtc_folder=/path/to/gtc_folder
+csv_manifest_file=/path/to/csv_manifest_file
+ref=/path/to/reference_genome
+out_prefix=/path/to/output_prefix
+sample_sheet_file=/path/to/sample_sheet_file
+sex_file=/path/to/sex_file
+
 # Check information for IDAT files (e.g., date, chip version, etc.)
 # This command uses the `bcftools +gtc2vcf` plugin to inspect IDAT files.
 bcftools +gtc2vcf \

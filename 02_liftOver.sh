@@ -1,3 +1,10 @@
+# Define variables path and name
+plink_file=/path/to/plink_file
+prefix_hg19=/path/to/prefix_hg19
+output=/path/to/output
+liftOver_binary=/path/to/liftOver_binary
+chain_file=/path/to/hg19ToHg38.over.chain.gz
+
 # Step 1: Convert PLINK binary files to text format (PED/MAP) for compatibility with liftOver tools.
 plink --bfile "$plink_file" --recode --out "$prefix_hg19"
 

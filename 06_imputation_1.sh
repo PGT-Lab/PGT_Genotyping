@@ -1,3 +1,13 @@
+# Define variables path and name
+data=/path/to/data
+data_freq=/path/to/data_freq
+check=/path/to/check
+output_path=/path/to/output_path
+prep_TOPMed=/path/to/prep_TOPMed
+data_path=/path/to/data_path
+summary_file=/path/to/summary_file
+batch=/path/to/batch
+
 # Step 1: Calculate allele frequencies for the dataset and save the output.
 plink --freq --bfile "$data" --out "$data_freq"
 
