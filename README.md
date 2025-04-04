@@ -28,6 +28,7 @@ For further enquiries, please refer to the authors listed below:
 | ------- | ------ | ------ |
 | Lucas Toshio Ito | XX | XX |
 | Adrielle | XX | XX |
+| Gustavo | XX | XX |
 
 ---
 
@@ -168,7 +169,6 @@ plink --bfile "$genotyped_data" --maf 0.01 --geno 0.02 --hwe 1e-10  --make-bed -
 ```{bash}
 plink --bfile "$genotyped_data"_QC --mind 0.02 --make-bed --out "$genotyped_data"_QC_mind
 ```
-had split x?
 
 ### **3. Keep only ATGC SNVs:**
 
@@ -212,16 +212,16 @@ plink --bfile "$genotyped_data"_semhet --remove check_sex_fail.txt --make-bed --
 <!---
 put info later
 --->
-
-| Dataset | SNV | Sample | ATGC SNVs | IBD | Heterozygosity | Missingness | Sex-check |
-| -------- | --- | --- | --- | --- | --- | --- | --- |
-| PC_Kings_2016_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| PI_ESALQ_2020 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| PSC_Kings_2019 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| PSC_Kings_2016_2019 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| TP_USP_2020 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| SC_CHOP_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| PS_CHOP_2017 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+*SNV and sample removal per step:*
+| Dataset | MAF | HWE | Geno | Mind | ATGC SNVs | IBD | Heterozygosity | Missingness | Sex-check |
+| -------- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PC_Kings_2016_2017 | 257,032 | 7,612 | 3,609 | 0 | 0 | 0 | 0 | 0 | 0 |
+| PI_ESALQ_2020 | 145,917 | 15,852 | 71,940 | 6 | 0 | 0 | 0 | 0 | 0 |
+| PSC_Kings_2019 | 15,293 | 6,003 | 298,548 | 6 | 2,441| 0 | 0 | 0 | 0 |
+| PSC_Kings_2016_2019 | 85,573 | 54,891 | 97,262 | 6 | 1,815 | 0 | 0 | 0 | 0 |
+| TP_USP_2020 | 126,363 | 3 | 35,434 | 0 | 95 | 0 | 0 | 0 | 0 |
+| SC_CHOP_2017 | 21,622 | 16,066 | 9,932 | 2 | 0 | 0 | 0 | 0 | 0 |
+| PS_CHOP_2017 | 21,096 | 756 | 15,491 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ---
 
@@ -267,7 +267,17 @@ Prior to imputation, we applied scripts and steps from [TOPMed's Imputation Serv
 
 <!---
 Put parameters of imputation here
++ The liftover was done before the VCF creation, right?
 --->
+
+| Imputation service | Parameter |
+| --- | --- |
+| **Panel** | TOPMed r3 |
+| **Array build** | GRCh38/hg38 |
+| **rsq filter** | off |
+| **Phasing** | Eagle v2.4 |
+| **Population** | TOPMed Panel |
+| **Mode** | Quality Control & Imputation |
 
 *External files to use:*
 ```{bash}
@@ -343,40 +353,43 @@ put info later
 --->
 
 *SNVs and samples per dataset*
-| Dataset | Initial | Final |
-| -------- | --- | --- |
-| GSA | 0 | 325155 |
-| PSYCH | 0 | 291482 |
-| OMNI | XXXX | 639434 |
+
+| Dataset | GSA | PSYCH | OMNI |
+| -------- | --- | --- | --- |
+| Initial Variants | XXXX | XXXX | XXXX |
+| Final Variants | 325155 | 291482 | 639434 |
+| | | | |
+| Initial samples | XXX | XXX | XXX |
+| Final samples | XXX | XXX | XXX |
 
 ---
 
-# 7. QC post imputation
+# 7. Post imputation processing
 
-The INFO score is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Minimac4` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the INFO score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
+The INFO score is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the INFO score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
 
 <!---
-maybe a ref here...?
+maybe a ref here...? + check eagle output
 --->
 
 *Main Command:*
 
 ```{bash}
-find "${output_path_GSA}" -name "*.dose.vcf.gz" | sort -V | parallel -j 5 'bcftools view -i "R2>.7" -Oz -o {.}.filtered_r2_07.vcf.gz {}'
-find "${output_path_GSA}" -name "*.filtered_r2_07.vcf.gz" | sort -V | xargs bcftools concat -Oz -o "${output_path_GSA}/imputed_GSA_r2_07.vcf.gz"
+find "${output_path_GSA}" -name "*.dose.vcf.gz" |\
+sort -V |\
+parallel -j 5 'bcftools view -i "R2>.8" -Oz -o {.}.filtered_r2_08.vcf.gz {}'
+
+find "${output_path_GSA}" -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o "${output_path_GSA}/imputed_GSA_r2_08.vcf.gz"
 ```
 
 ```{bash}
-bcftools index -t "${output_path_GSA}/imputed_GSA_r2_07.vcf.gz"
-plink --vcf ${output_path_GSA}/imputed_GSA_r2_07.vcf.gz --make-bed --out ${output_path_GSA}/imputed_GSA_r2_07
-find "${output_path_GSA}" -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o "${output_path_GSA}/imputed_GSA_r2_08.vcf.gz"
 bcftools index -t "${output_path_GSA}/imputed_GSA_r2_08.vcf.gz"
 plink --vcf ${output_path_GSA}/imputed_GSA_r2_08.vcf.gz --make-bed --out ${output_path_GSA}/imputed_GSA_r2_08
 ```
 
 ---
 
-# 8. Dataset merge
+# 8. Quality control 2
 
 Summary
 
@@ -392,7 +405,7 @@ Summary
 
 ---
 
-# 9. Quality control 2
+# 9. Dataset merge
 
 Summary
 
