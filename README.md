@@ -366,7 +366,7 @@ put info later
 
 # 7. Post imputation processing
 
-The INFO score is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the INFO score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
+The Rsq is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
 
 <!---
 maybe a ref here...? + check eagle output
