@@ -254,7 +254,7 @@ plink --ped "$path_file"/lifted.ped --map "$path_file"/good_lifted.map --recode 
 plink --ped "$output".ped --map "$output".map --make-bed --out "$output"
 ```
 
-Although the TOPMed imputation server accepts data in Hg19, this conversion step is crucial for Imputation QC, as the reference panel used in these steps is based on Hg38."
+Although the TOPMed imputation server accepts data in Hg19, this conversion step is crucial for Imputation QC, as the reference panel used in these steps is based on Hg38.
 
 ---
 
