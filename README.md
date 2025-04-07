@@ -40,15 +40,10 @@ This script convertes IDAT files to GTC format, then to VCF format, and finally 
 
 *Requirements for this step:*
 
-- [gtc2vcf](https://github.com/freeseek/gtc2vcf)
+- [gtc2vcf](https://github.com/freeseek/gtc2vcf) - Follow installation instructions from their github
 - [Chip manifest and cluster files](https://support.illumina.com/array/downloads.html)
-- [GRCh37 human genome reference](ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz)
-- [GRCh38 human genome reference](ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz)
-
-```{bash}
-sudo apt install wget unzip git g++ zlib1g-dev bwa unzip samtools msitools cabextract mono-devel libgdiplus icu-devtools bcftools
-sudo apt install libbz2-dev libssl-dev liblzma-dev libgsl0-dev
-```
+- IDAT or GTC files (Illumina)
+- Sample sheet and sex file (optional)
 
 *Main commands:*
 
@@ -70,17 +65,9 @@ bcftools +gtc2vcf \
   --extra "$out_prefix.tsv" | \
   bcftools reheader --samples "$sample_sheet_file" | \
   bcftools sort -Ou -T ./bcftools. | \
-  bcftools norm \
-  --threads 15 \
-  --no-version \
-  -Oz \
-  -c x \
-  -f "$ref" | \
+  bcftools norm --threads 15 --no-version -Oz -c x -f "$ref" | \
   tee "$out_prefix.vcf.gz" | \
-  bcftools index \
-  --threads 15 \
-  -ft \
-  --output  "$out_prefix.vcf.gz.tbi"
+  bcftools index --threads 15 -ft --output "$out_prefix.vcf.gz.tbi"
 ```
 
 ### **3. VCF to PLINK v1.9 files (bed bim fam)**
@@ -91,35 +78,7 @@ plink --vcf "$out_prefix" --const-fid --update-sex "$sex_file" --make-bed --out 
 
 ---
 
-# 2. LiftOver
-
-![](https://github.com/ccmaues/pgt_images_github/blob/main/02_lift_over.png?raw=true)
-<!---
-put i here a figure showing the "steps" done
---->
-
-A liftover is essential in genomics to convert genomic coordinates (e.g., gene positions, variants, or annotations) between different reference genome assemblies. This step was performed with `LiftOverPlink` and `LiftOver`.
-
-*Requirements to run:*
-
-- [LiftoverPlink](https://github.com/sritchie73/liftOverPlink.git)
-- [Chain from hg19 to hg38](http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz)
-
-*Main Command:*
-```{bash}
-plink --bfile "$plink_file" --recode --out "$prefix_hg19"
-python3 liftOverPlink.py --bin ./liftOver --map "$prefix_hg19.map" --out lifted --chain hg19ToHg38.over.chain.gz
-python3 rmBadLifts.py --map lifted.map --out good_lifted.map --log bad_lifted.dat
-cut -f 2 bad_lifted.dat > to_exclude.dat
-cut -f 4 lifted.bed.unlifted | sed "/^#/d" >> to_exclude.dat 
-plink --file "$prefix_hg19" --recode --out lifted --exclude to_exclude.dat 
-plink --ped lifted.ped --map good_lifted.map --recode --out "$output"
-plink --ped "$output.ped" --map "$output.map" --make-bed --out "$output"
-```
-
----
-
-# 3. Check overlap
+# 2. Check overlap
 
 We estimated the SNV overlap between different chips and cohorts providing a summary of overlaps across those datasets.
 
@@ -146,7 +105,7 @@ install.package("plyr")
 
 ---
 
-# 4. Quality control 1
+# 3. Quality control 1
 
 ![](https://raw.githubusercontent.com/ccmaues/pgt_images_github/refs/heads/main/05_QC.png)
 
@@ -225,7 +184,7 @@ put info later
 
 ---
 
-# 5. Dataset merge
+# 4. Dataset merge
 
 The merged was performed only with the inteserction of SNVs in pairs of datasets.
 
@@ -261,7 +220,45 @@ plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common
 
 ---
 
-# 6. Imputation QC:
+# 5. Quality Control 2
+
+QC pós merge
+
+---
+
+# 6. LiftOver (necessary only if data is in Hg19)
+
+![](https://github.com/ccmaues/pgt_images_github/blob/main/02_lift_over.png?raw=true)
+
+A liftover is essential in genomics to convert genomic coordinates (e.g., gene positions, variants, or annotations) between different reference genome assemblies. This step was performed with `LiftOverPlink` and `LiftOver`. Previous work ([Ormond et al., 2021](https://doi.org/10.1093/bib/bbab069)) has highlighted unusual behaviour in build conversion, such as SNVs mapping to a different chromosome names as conversion-unstable positions (CUPs), so these regions must be removed before LiftOver.
+
+*Requirements to run:*
+
+- [genomeBuildConversion](https://github.com/cathaloruaidh/genomeBuildConversion)
+- [CUP files hg19](https://raw.githubusercontent.com/cathaloruaidh/genomeBuildConversion/master/CUP_FILES/FASTA_BED.ALL_GRCh37.novel_CUPs.bed)
+- [LiftoverPlink](https://github.com/sritchie73/liftOverPlink)
+- [Chain from hg19 to hg38](http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz)
+
+*Main Command:*
+```{bash}
+awk '{print substr($1, 4), $2, $3, "SETID"}' "$liftover"/FASTA_BED.ALL_GRCh37.novel_CUPs.bed > "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed
+
+plink --bfile "$plink_file" --exclude range "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed --output-chr M --make-bed --out "$plink_file"_del1
+plink --bfile "$plink_file"_del1 --recode --output-chr M --out "$plink_file"
+python3 "$liftover"/liftOverPlink.py --bin "$liftover"/liftOver --map "$plink_file".map --out "$path_file"/lifted --chain "$liftover"/hg19ToHg38.over.chain.gz
+python3 "$liftover"/rmBadLifts.py --map "$path_file"/lifted.map --out "$path_file"/good_lifted.map --log "$path_file"/bad_lifted.dat
+cut -f 2 "$path_file"/bad_lifted.dat > "$path_file"/to_exclude.dat
+cut -f 4 "$path_file"/lifted.bed.unlifted | sed "/^#/d" >> "$path_file"/to_exclude.dat 
+plink --file "$plink_file" --recode --out "$path_file"/lifted --exclude "$path_file"/to_exclude.dat 
+plink --ped "$path_file"/lifted.ped --map "$path_file"/good_lifted.map --recode --out "$output"
+plink --ped "$output".ped --map "$output".map --make-bed --out "$output"
+```
+
+Although the TOPMed imputation server accepts data in Hg19, this conversion step is crucial for Imputation QC, as the reference panel used in these steps is based on Hg38."
+
+---
+
+# 7. Imputation QC:
 
 Prior to imputation, we applied scripts and steps from [TOPMed's Imputation Server](https://topmedimpute.readthedocs.io/en/latest/prepare-your-data/) to prepare the merged data for imputation. This included checking the data for compatibility with the HRC reference panel, filtering variants, and ensuring that the data was in the correct format for imputation.
 
@@ -364,7 +361,7 @@ put info later
 
 ---
 
-# 7. Post imputation processing
+# 8. Post imputation processing
 
 The Rsq is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
 
@@ -389,7 +386,7 @@ plink --vcf ${output_path_GSA}/imputed_GSA_r2_08.vcf.gz --make-bed --out ${outpu
 
 ---
 
-# 8. Quality control 2
+# 9. Quality control 3
 
 Summary
 
@@ -405,7 +402,7 @@ Summary
 
 ---
 
-# 9. Dataset merge
+# 10. Dataset merge
 
 Summary
 
@@ -421,7 +418,7 @@ Summary
 
 ---
 
-# 10. Cohort separation
+# 11. Cohort separation
 
 Summary
 

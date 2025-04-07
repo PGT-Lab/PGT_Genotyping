@@ -5,6 +5,7 @@ path_file=/path/to/path_file
 output=/path/to/output
 
 # Step 1: Exclude problematic regions (novel CUPs) from the dataset and convert chromosomes to PLINK format.
+awk '{print substr($1, 4), $2, $3, "SETID"}' "$liftover"/FASTA_BED.ALL_GRCh37.novel_CUPs.bed > "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed
 plink --bfile "$plink_file" --exclude range "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed --output-chr M --make-bed --out "$plink_file"_del1
 
 # Step 2: Recode the dataset to standard PLINK format after excluding problematic regions.
