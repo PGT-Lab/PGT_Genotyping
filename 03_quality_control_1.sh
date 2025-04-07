@@ -17,7 +17,7 @@ plink --bfile "$plink_files_genotyped"_QC_mind --snps-only just-acgt --make-bed 
 plink --bfile "$plink_files_genotyped"_QC_mind_ACTG --genome --min 0.2 --out "$plink_files_genotyped"_ibd
 
 # Exclude sex chromosomes (XY) from the dataset for further analysis.
-plink --bfile "$plink_files_genotyped"_ibd --not-chr XY --make-bed --out "$plink_files_genotyped"_semXY
+plink --bfile "$plink_files_genotyped"_QC_mind_ACTG --not-chr XY --make-bed --out "$plink_files_genotyped"_semXY
 
 # Calculate missing genotype rates for individuals.
 plink --bfile "$plink_files_genotyped"_semXY --missing --out indiv_missing

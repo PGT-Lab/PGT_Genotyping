@@ -6,7 +6,7 @@ output_path=/path/to/output_path
 prep_TOPMed=/path/to/prep_TOPMed
 data_path=/path/to/data_path
 summary_file=/path/to/summary_file
-batch=/path/to/batch
+batch=batch_name
 
 # Step 1: Calculate allele frequencies for the dataset and save the output.
 plink --freq --bfile "$data" --out "$data_freq"
@@ -27,7 +27,7 @@ find "$data_path" -type f -name "*chr23*" | while IFS= read -r file; do
   mv "$file" "$new_name"         # Rename the file.
 done
 
-# Step 6: Convert VCF files for chromosomes 1-22 and X to PLINK-compatible format.
+# Step 6: Adjust format of the CHR column by adding the prefix "chr"
 for i in {1..22} X; do 
   plink --vcf "$data-updated-chr${i}.vcf" --output-chr chrMT --recode vcf --out "$data-updated-chr${i}" --noweb
 done
@@ -39,30 +39,10 @@ for i in {1..22} X; do
     -d -f "$check"/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna -m flip 2>&1 | tee "$data"-updated-chr"$i".ref.vcf.log
 done 
 
-# Step 8: Summarize unresolved variants for each chromosome and calculate the total unresolved variants.
-echo -e "Chromosome\tUnresolved_Variants" > "$data_path"/"$summary_file"
-total_unresolved=0
-for i in {1..22} X; do
-  log_file="$data"-updated-chr"$i".ref.vcf.log
-  if [ -f "$log_file" ]; then
-    # Extract the count of unresolved variants from the log file.
-    unresolved_count=$(grep -oP "^NS\s+unresolved\s+\K\d+" "$log_file")
-    unresolved_count=${unresolved_count:-0}  # Default to 0 if no unresolved variants are found.
-    total_unresolved=$((total_unresolved + unresolved_count))  # Update the total unresolved count.
-    echo -e chr"$i"\t"$unresolved_count" >> "$data_path/"$summary_file"
-  else
-    echo -e chr"$i\tN/A" >> "$data_path/"$summary_file"  # Log "N/A" if the log file is missing.
-  fi
-done
-echo -e Total\t"$total_unresolved" >> "$data_path"/"$summary_file"  # Add the total unresolved count to the summary.
-cat "$data_path"/"$summary_file"  # Display the summary file.
-
-# Step 9: Sort and compress the fixed VCF files for each chromosome.
+# Step 8: Sort and compress the fixed VCF files for each chromosome.
 for i in {1..22} X; do 
   vcf-sort "$data"-updated-chr"$i".ref.vcf | bgzip -c > "$output_path"/"$batch"_chr"$i".vcf.gz
 done
 
-# Step 10: Extract files from zipped archives for each chromosome using 7z.
-for i in {1..22} X; do 
-  7z e "$output_path"/chr_"$i".zip -p'password' -o"$output_path"/unzip
-done
+# Step 9: Move all intermediary files to a specific folder
+mv ${data}-updated* ${data_path}/*-HRC.txt Run-plink.sh ${data_prep}

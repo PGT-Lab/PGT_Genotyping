@@ -26,9 +26,9 @@ For further enquiries, please refer to the authors listed below:
 
 | Authors | Github | Contact |
 | ------- | ------ | ------ |
-| Lucas Toshio Ito | XX | XX |
-| Adrielle | XX | XX |
-| Gustavo | XX | XX |
+| Lucas Toshio Ito | https://github.com/lcstoshio | lucas.toshio@unifesp.br |
+| Adrielle Martins de Oliveira| https://github.com/MartinsAdrielle | adrielle.martins@unifesp.br |
+| Gustavo Satoru Kajitani | https://github.com/gkajitani | g.kajitani@unifesp.br |
 
 ---
 
@@ -186,7 +186,7 @@ put info later
 
 # 4. Dataset merge
 
-The merged was performed only with the inteserction of SNVs in pairs of datasets.
+The merge was performed using only the intersection of SNVs between pairs of datasets. This step can be done with two or more datasets, as long as they have sufficient overlap and are based on the same reference genome."
 
 *Main Command:*
 
@@ -197,6 +197,11 @@ plink --bfile "$dataset1" --list-duplicate-vars --out "$dataset1_new"
 plink --bfile "$dataset1" --exclude "$dataset1_new".dupvar --make-bed --out "$dataset1_new"_nodup
 plink --bfile "$dataset1_new"_nodup --write-snplist --out "$dataset1_new"_nodup
 sort -o "$dataset1_new"_nodup.snplist "$dataset1_new"_nodup.snplist
+
+plink --bfile "$dataset2" --list-duplicate-vars --out "$dataset2_new"  # Identify duplicate variants in dataset 1
+plink --bfile "$dataset2" --exclude "$dataset2_new".dupvar --make-bed --out "$dataset2_new"_nodup  # Exclude duplicate variants
+plink --bfile "$dataset2_new"_nodup --write-snplist --out "$dataset2_new"_nodup  # Write the list of SNPs
+sort -o "$dataset2_new"_nodup.snplist "$dataset2_new"_nodup.snplist  # Sort the SNP list
 ```
 
 ### **2. Common SNVs between datasets:**
@@ -215,7 +220,7 @@ plink --bfile "$dataset2_new"_nodup_common --update-ids "$dataset2_new"_updatefi
 ```
 
 ```{bash}
-plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common_fid1 --make-bed --out "$psych_merged"
+plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common_fid1 --make-bed --out "$dataset_path"/"$dataset_merged"
 ```
 
 ---
@@ -226,15 +231,16 @@ QC pós merge
 
 ---
 
-# 6. LiftOver (necessary only if data is in Hg19)
+# 6. LiftOver (only necessary if data is in Hg19)
 
 ![](https://github.com/ccmaues/pgt_images_github/blob/main/02_lift_over.png?raw=true)
 
-A liftover is essential in genomics to convert genomic coordinates (e.g., gene positions, variants, or annotations) between different reference genome assemblies. This step was performed with `LiftOverPlink` and `LiftOver`. Previous work ([Ormond et al., 2021](https://doi.org/10.1093/bib/bbab069)) has highlighted unusual behaviour in build conversion, such as SNVs mapping to a different chromosome names as conversion-unstable positions (CUPs), so these regions must be removed before LiftOver.
+A liftover is essential in genomics to convert genomic coordinates (e.g., gene positions, variants, or annotations) between different reference genome assemblies. Although the TOPMed imputation server accepts data in Hg19, this conversion step is crucial for Imputation QC, as the reference panel used in these steps is based on Hg38.
+
+This step was performed with `LiftOverPlink` and `LiftOver`. Previous work ([Ormond et al., 2021](https://doi.org/10.1093/bib/bbab069) and [Github](https://github.com/cathaloruaidh/genomeBuildConversion)) has highlighted unusual behaviour in build conversion, such as SNVs mapping to a different chromosome names as conversion-unstable positions (CUPs), so these regions must be removed before LiftOver.
 
 *Requirements to run:*
 
-- [genomeBuildConversion](https://github.com/cathaloruaidh/genomeBuildConversion)
 - [CUP files hg19](https://raw.githubusercontent.com/cathaloruaidh/genomeBuildConversion/master/CUP_FILES/FASTA_BED.ALL_GRCh37.novel_CUPs.bed)
 - [LiftoverPlink](https://github.com/sritchie73/liftOverPlink)
 - [Chain from hg19 to hg38](http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz)
@@ -254,13 +260,11 @@ plink --ped "$path_file"/lifted.ped --map "$path_file"/good_lifted.map --recode 
 plink --ped "$output".ped --map "$output".map --make-bed --out "$output"
 ```
 
-Although the TOPMed imputation server accepts data in Hg19, this conversion step is crucial for Imputation QC, as the reference panel used in these steps is based on Hg38.
-
 ---
 
 # 7. Imputation QC:
 
-Prior to imputation, we applied scripts and steps from [TOPMed's Imputation Server](https://topmedimpute.readthedocs.io/en/latest/prepare-your-data/) to prepare the merged data for imputation. This included checking the data for compatibility with the HRC reference panel, filtering variants, and ensuring that the data was in the correct format for imputation.
+Prior to imputation, we applied scripts and steps from [TOPMed's Imputation Server](https://topmedimpute.readthedocs.io/en/latest/prepare-your-data/) to prepare the merged data for imputation. This included checking the data for compatibility with the TOPMed reference panel, filtering variants, and ensuring that the data was in the correct format for imputation.
 
 <!---
 Put parameters of imputation here
@@ -277,10 +281,13 @@ Put parameters of imputation here
 | **Mode** | Quality Control & Imputation |
 
 *External files to use:*
-```{bash}
-wget https://www.chg.ox.ac.uk/~wrayner/tools/HRC-1000G-check-bim-v4.2.13-NoReadKey.zip
-wget ftp://ngs.sanger.ac.uk/production/hrc/HRC.r1-1/HRC.r1-1.GRCh37.wgs.mac5.sites.tab.gz
-```
+
+*Requirements to run:*
+
+- [HRC or 1000G Imputation preparation and checking](https://www.chg.ox.ac.uk/~wrayner/tools/HRC-1000G-check-bim-v4.3.0.zip)
+- [TOPMed Reference Panel](https://legacy.bravo.sph.umich.edu/freeze5/hg38/download)
+- [Script to format panel](https://www.chg.ox.ac.uk/~wrayner/tools/CreateTOPMed.zip)
+- GRCh38 human genome reference
 
 *Main Command:*
 
@@ -310,32 +317,8 @@ done
 ```
 
 ```{bash}
-summary_file="unresolved_variants_summary.txt"
-echo -e "Chromosome\tUnresolved_Variants" > ${data_path}/${summary_file}
-total_unresolved=0
-for i in {1..22} X; do
-  log_file="${data}-updated-chr${i}.ref.vcf.log"
-  if [ -f "$log_file" ]; then
-    unresolved_count=$(grep -oP "^NS\s+unresolved\s+\K\d+" "$log_file")
-    unresolved_count=${unresolved_count:-0}  # Default to 0 if empty
-    total_unresolved=$((total_unresolved + unresolved_count))
-    echo -e "chr${i}\t${unresolved_count}" >> ${data_path}/${summary_file}
-  else
-    echo -e "chr${i}\tN/A" >> ${data_path}/${summary_file}
-  fi
-done
-echo -e "Total\t${total_unresolved}" >> ${data_path}/${summary_file}
-cat ${data_path}/${summary_file}
-# Sorting and zipping final file
 for i in {1..22} X; do vcf-sort ${data}-updated-chr${i}.ref.vcf | bgzip -c > ${output_path}/${batch}_chr${i}.vcf.gz; done
-# Moving all intermediary files to specific folder
 mv ${data}-updated* ${data_path}/*-HRC.txt Run-plink.sh ${data_prep}
-```
-
-```{bash}
-for i in {1..22} X; do
-  7z e ${output_path_Omni}/chr_"$i".zip -p'OUad:y0CdWXx5W' -o${output_path_Omni}/unzip
-done
 ```
 
 *Removal*
@@ -372,16 +355,19 @@ maybe a ref here...? + check eagle output
 *Main Command:*
 
 ```{bash}
-find "${output_path_GSA}" -name "*.dose.vcf.gz" |\
-sort -V |\
-parallel -j 5 'bcftools view -i "R2>.8" -Oz -o {.}.filtered_r2_08.vcf.gz {}'
-
-find "${output_path_GSA}" -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o "${output_path_GSA}/imputed_GSA_r2_08.vcf.gz"
+for i in {1..22} X; do 
+  7z e "$output_path"/chr_"$i".zip -p'password' -o"$output_path"/unzip
+done
 ```
 
 ```{bash}
-bcftools index -t "${output_path_GSA}/imputed_GSA_r2_08.vcf.gz"
-plink --vcf ${output_path_GSA}/imputed_GSA_r2_08.vcf.gz --make-bed --out ${output_path_GSA}/imputed_GSA_r2_08
+find "$output_path"/unzip -name "*.dose.vcf.gz" | sort -V  | parallel -j 5 'bcftools view -i "R2>.8" -Oz -o {.}.filtered_r2_08.vcf.gz {}'
+find "$output_path"/unzip -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o ""$output_path"/unzip/imputed_r2_08.vcf.gz"
+```
+
+```{bash}
+bcftools index -t ""$output_path"/unzip/imputed_r2_08.vcf.gz"
+plink --vcf "$output_path"/unzip//imputed_r2_08.vcf.gz --make-bed --out "$output_path"/unzip//imputed_r2_08
 ```
 
 ---
