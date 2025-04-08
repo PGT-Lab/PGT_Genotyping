@@ -242,7 +242,7 @@ A PLINK-based pipeline for quality control (QC) before genotype imputation, adap
 ### Usage
 Run scripts preImputation_QC.sh, heterozygosity_outliers.R and sex_check.R.
 
-# Initial IBD/PI_HAT check (relatedness)
+### 1 Initial IBD/PI_HAT check (relatedness)
 ```bash
 plink --bfile $INPUT --genome --min 0.2 --out ${INPUT}_initial_ibd
 sort -rk 10 ${INPUT}_initial_ibd.genome > ${INPUT}_initial_ibd_sorted.genome
