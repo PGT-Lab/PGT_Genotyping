@@ -2,12 +2,6 @@
 
 ### Processing of the genotping array datasets at Laboratory of Integrative Neurosciences (LINC) at UNIFESP.
 
-
-<!---
-put i here a figure showing the "steps" done
-<img src="https://cdn-icons-png.flaticon.com/512/8704/8704721.png" width="35" height="35">
---->
-
 Here we provide the reasoning of parameters and steps taken in the pipeline. The pipeline was designed to be run in a `Linux` environment, and the scripts are written in `bash` and `R`. The pipeline is divided into several steps, each of which is described below. For more detailed information, please refer to the individual scripts.
 
 **Three types of chips were used in the pipeline:**
@@ -92,7 +86,7 @@ The table below shows the number of overlapping SNVs between different datasets.
 | **PI_ESALQ_2020**        | 109542             | -             | 635892        | 109542              | 613312      | 139140      | 138358      |
 | **PSC_Kings_2019**       | 108461             | 635892        | -             | 108461              | 589402      | 137739      | 136991      |
 | **PSC_Kings_2016_2019**  | 587111             | 109542        | 108461        | -                   | 107784      | 258365      | 256052      |
-| **TP_USP_2020**         | 107784             | 613312        | 589402        | 107784              | -           | 133277      | 132530      |
+| **TP_USP_2020**          | 107784             | 613312        | 589402        | 107784              | -           | 133277      | 132530      |
 | **SC_CHOP_2017**         | 258365             | 139140        | 137739        | 258365              | 133277      | -           | 719023      |
 | **PS_CHOP_2017**         | 256052             | 138358        | 136991        | 256052              | 132530      | 719023      | -           |
 
@@ -300,8 +294,6 @@ Put parameters of imputation here
 | **Population** | TOPMed Panel |
 | **Mode** | Quality Control & Imputation |
 
-*External files to use:*
-
 *Requirements to run:*
 
 - [HRC or 1000G Imputation preparation and checking](https://www.chg.ox.ac.uk/~wrayner/tools/HRC-1000G-check-bim-v4.3.0.zip)
@@ -309,7 +301,7 @@ Put parameters of imputation here
 - [Script to format panel](https://www.chg.ox.ac.uk/~wrayner/tools/CreateTOPMed.zip)
 - GRCh38 human genome reference
 
-*Main Command:*
+*Main Commands:*
 
 ```{bash}
 plink --freq --bfile ${data} --out ${data}_freq
@@ -342,14 +334,15 @@ mv ${data}-updated* ${data_path}/*-HRC.txt Run-plink.sh ${data_prep}
 ```
 
 *Removal*
+
 | Dataset | liftover | Excluded | Unsolved | Allele mismatch | TOPMed QC | Final |
 | -------- | --- | --- | --- | --- | --- | --- |
-| GSA | 253 | 16593 | 1720 | 13 | 6618 |
-| PSYCH | 768 | 9428 | 4043 | 28 | 4061 |
-| OMNI | 824 | 19046 | 1437 | 48 | 10800 | 639434 |
+| GSA | 253 | 16,593 | 1,720 | 13 | 6,618 |
+| PSYCH | 768 | 9,428 | 4,043 | 28 | 4,061 |
+| OMNI | 824 | 19,046 | 1,437 | 48 | 10,800 | 639,434 |
 
 <!---
-put info later
+put info later - might transfer to QC topic instead of imputation one
 --->
 
 *SNVs and samples per dataset*
@@ -357,7 +350,7 @@ put info later
 | Dataset | GSA | PSYCH | OMNI |
 | -------- | --- | --- | --- |
 | Initial Variants | XXXX | XXXX | XXXX |
-| Final Variants | 325155 | 291482 | 639434 |
+| Final Variants | 325,155 | 291,482 | 639,434 |
 | | | | |
 | Initial samples | XXX | XXX | XXX |
 | Final samples | XXX | XXX | XXX |
@@ -366,29 +359,46 @@ put info later
 
 # 8. Post imputation processing
 
-The Rsq is a measure of the quality of imputed genotypes, with higher values indicating better quality. The value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score, which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
+![](https://raw.githubusercontent.com/ccmaues/pgt_images_github/refs/heads/main/08_post_impt.png)
+
+The Rsq is a measure of the quality of imputed genotypes - higher values indicate a better quality - and the value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score (R²), which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
 
 <!---
 maybe a ref here...? + check eagle output
 --->
 
-*Main Command:*
+*Main Commands:*
+
+### **1. Unzip:**
 
 ```{bash}
 for i in {1..22} X; do 
-  7z e "$output_path"/chr_"$i".zip -p'password' -o"$output_path"/unzip
+  7z e chr_"$i".zip -p'password' -o"$output"
 done
 ```
+### **2. INFO filter:**
 
 ```{bash}
-find "$output_path"/unzip -name "*.dose.vcf.gz" | sort -V  | parallel -j 5 'bcftools view -i "R2>.8" -Oz -o {.}.filtered_r2_08.vcf.gz {}'
-find "$output_path"/unzip -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o ""$output_path"/unzip/imputed_r2_08.vcf.gz"
+find "$output_path" -name "*.dose.vcf.gz" | sort -V  | parallel -j 5 'bcftools view -i "R2>.8" -Oz -o {.}.filtered_r2_08.vcf.gz {}'
+find "$output_path" -name "*.filtered_r2_08.vcf.gz" | sort -V | xargs bcftools concat -Oz -o $output_INFO
 ```
 
+### **3. VCF to PLINK format:**
+
 ```{bash}
-bcftools index -t ""$output_path"/unzip/imputed_r2_08.vcf.gz"
-plink --vcf "$output_path"/unzip//imputed_r2_08.vcf.gz --make-bed --out "$output_path"/unzip//imputed_r2_08
+bcftools index -t "$output_INFO".vcf.gz
+plink --vcf "$output_INFO".vcf.gz --make-bed --out "$output_INFO_PLINK"
 ```
+
+<!---
+put info later
+--->
+
+| Filter | INFO |
+| --- | --- |
+| **Psych** | X |
+| **Omni** | X |
+| **GSA** | X |
 
 ---
 
@@ -396,31 +406,51 @@ plink --vcf "$output_path"/unzip//imputed_r2_08.vcf.gz --make-bed --out "$output
 
 Summary
 
-*Install to run*
-
-*External files to use:*
-
 *Main Command:*
 
 ```{bash}
-
+plink --bfile "$output_INFO_PLINK" --maf 0.01 --geno 0.02 -hwe 1e-10 --make-bed --out "$output_INFO_PLINK"_QC
+plink --bfile "$output_INFO_PLINK"_QC --snps-only --make-bed --out "$output_INFO_PLINK"_QC_snp
+plink2 --bfile "$output_INFO_PLINK"_merge_nodup_common --rm-dup exclude-all --make-bed --out "$output_INFO_PLINK"_merge_nodup_common_snp
 ```
 
+*SNV removal at each step*
+
+| Filter | Psych | Omni | GSA |
+| --- | --- | --- | --- |
+| **HWE** | 203,354 | 277,098 | 583,915 |
+| **MAF** | 14,768,441 | 18,981,364 | 36,544,067 |
+| **SNPs-Only** | 565247 | 588953 | 579855 |
+
+*Final SNV number after QC*
+
+| Filter | SNVs | 
+| --- | --- |
+| **Psych** | 9,884,542 |
+| **Omni** | 10,324,705 |
+| **GSA** | 10,138,583 |
 ---
 
-# 10. Dataset merge
+# 10. Chip dataset merge
 
 Summary
 
-*Install to run*
-
-*External files to use:*
+<!---
+put ia better description
+--->
 
 *Main Command:*
 
-```{bash}
+Refer to `4. Dataset merge` command description.
 
-```
+| Dataset | SNVs |
+| --- | --- |
+| Psych | 9,884,542 |
+| Omni | 10,324,705 |
+| GSA | 10,138,583 |
+| | |
+| Psych + Omni | 9,151,967 |
+| Psych + Omni + Psych | 8,787,496 |
 
 ---
 
