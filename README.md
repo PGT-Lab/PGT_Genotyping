@@ -242,15 +242,17 @@ A PLINK-based pipeline for quality control (QC) before genotype imputation, adap
 ## Usage
 Run scripts in order (01 → 06). Replace `FILE_PREFIX` with your input file name.
 
-```bash
 # Example
 ./scripts/01_initial_pihat_check.sh FILE_PREFIX
 
 # Initial IBD/PI_HAT check (relatedness)
+```bash
 INPUT=$1
 
 plink --bfile $INPUT --genome --min 0.2 --out ${INPUT}_initial_ibd
 sort -rk 10 ${INPUT}_initial_ibd.genome > ${INPUT}_initial_ibd_sorted.genome
+```
+
 
 ---
 
