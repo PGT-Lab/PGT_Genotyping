@@ -227,7 +227,30 @@ plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common
 
 # 5. Quality Control 2
 
-QC pós merge
+After merging multiple genotype datasets (e.g., from different batches or studies), perform QC to ensure consistency.
+
+# Pre-Imputation QC Pipeline
+
+A PLINK-based pipeline for quality control (QC) before genotype imputation, adapted from the Ricopili framework.  
+**Key steps**: IBD/PI_HAT checks, SNP/indel filtering, missingness, heterozygosity, sex discrepancy, and HWE/MAF filters.
+
+## Requirements
+- PLINK 1.9+
+- R (for plots)
+- Unix shell (`sort`, `bgzip`, etc.)
+
+## Usage
+Run scripts in order (01 → 06). Replace `FILE_PREFIX` with your input file name.
+
+```bash
+# Example
+./scripts/01_initial_pihat_check.sh FILE_PREFIX
+
+# Initial IBD/PI_HAT check (relatedness)
+INPUT=$1
+
+plink --bfile $INPUT --genome --min 0.2 --out ${INPUT}_initial_ibd
+sort -rk 10 ${INPUT}_initial_ibd.genome > ${INPUT}_initial_ibd_sorted.genome
 
 ---
 
