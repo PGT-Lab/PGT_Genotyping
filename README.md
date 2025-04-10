@@ -103,10 +103,11 @@ install.package("plyr")
 
 ![](https://raw.githubusercontent.com/ccmaues/pgt_images_github/refs/heads/main/05_QC.png)
 
-Quality control (QC) is critical in genetic studies to ensure data reliability by removing poor-quality samples and variants. This QC step was applied to avoid **false associations, population stratification bias, or spurious results**, compromising study validity. T the parameters values were the same as in RICOPILI pipeline, with the addition of relatedness filter.
+Quality control (QC) is critical in genetic studies to ensure data reliability by removing poor-quality samples and variants. This QC step was applied to avoid **false associations, population stratification bias, or spurious results**, compromising study validity. The parameters values were the same as in RICOPILI pipeline, with the addition of relatedness filter.
 
 <!---
 add refs here for QC
+again... No prunning??
 --->
 
 *Main Commands:*
@@ -168,13 +169,13 @@ put info later
 *SNV and sample removal per step:*
 | Dataset | MAF | HWE | Geno | Mind | ATGC SNVs | IBD | Heterozygosity | Missingness | Sex-check |
 | -------- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| PC_Kings_2016_2017 | 257,032 | 7,612 | 3,609 | 0 | 0 | 0 | 0 | 0 | 0 |
-| PI_ESALQ_2020 | 145,917 | 15,852 | 71,940 | 6 | 0 | 0 | 0 | 0 | 0 |
-| PSC_Kings_2019 | 15,293 | 6,003 | 298,548 | 6 | 2,441| 0 | 0 | 0 | 0 |
-| PSC_Kings_2016_2019 | 85,573 | 54,891 | 97,262 | 6 | 1,815 | 0 | 0 | 0 | 0 |
-| TP_USP_2020 | 126,363 | 3 | 35,434 | 0 | 95 | 0 | 0 | 0 | 0 |
-| SC_CHOP_2017 | 21,622 | 16,066 | 9,932 | 2 | 0 | 0 | 0 | 0 | 0 |
-| PS_CHOP_2017 | 21,096 | 756 | 15,491 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **PC_Kings_2016_2017** | 257,032 | 7,612 | 3,609 | 0 | 0 | 0 | 0 | 0 | 0 |
+| **PI_ESALQ_2020** | 145,917 | 15,852 | 71,940 | 6 | 0 | 0 | 0 | 0 | 0 |
+| **PSC_Kings_2019** | 15,293 | 6,003 | 298,548 | 6 | 2,441| 0 | 0 | 0 | 0 |
+| **PSC_Kings_2016_2019** | 85,573 | 54,891 | 97,262 | 6 | 1,815 | 0 | 0 | 0 | 0 |
+| **TP_USP_2020** | 126,363 | 3 | 35,434 | 0 | 95 | 0 | 0 | 0 | 0 |
+| **SC_CHOP_2017** | 21,622 | 16,066 | 9,932 | 2 | 0 | 0 | 0 | 0 | 0 |
+| **PS_CHOP_2017** | 21,096 | 756 | 15,491 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ---
 
@@ -301,6 +302,10 @@ Put parameters of imputation here
 - [Script to format panel](https://www.chg.ox.ac.uk/~wrayner/tools/CreateTOPMed.zip)
 - GRCh38 human genome reference
 
+<!---
+i lost genome link...?
+--->
+
 *Main Commands:*
 
 ```{bash}
@@ -337,9 +342,9 @@ mv ${data}-updated* ${data_path}/*-HRC.txt Run-plink.sh ${data_prep}
 
 | Dataset | liftover | Excluded | Unsolved | Allele mismatch | TOPMed QC | Final |
 | -------- | --- | --- | --- | --- | --- | --- |
-| GSA | 253 | 16,593 | 1,720 | 13 | 6,618 |
-| PSYCH | 768 | 9,428 | 4,043 | 28 | 4,061 |
-| OMNI | 824 | 19,046 | 1,437 | 48 | 10,800 | 639,434 |
+| **GSA** | 253 | 16,593 | 1,720 | 13 | 6,618 | X |
+| **PSYCH** | 768 | 9,428 | 4,043 | 28 | 4,061 | X |
+| **OMNI** | 824 | 19,046 | 1,437 | 48 | 10,800 | 639,434 |
 
 <!---
 put info later - might transfer to QC topic instead of imputation one
@@ -349,11 +354,11 @@ put info later - might transfer to QC topic instead of imputation one
 
 | Dataset | GSA | PSYCH | OMNI |
 | -------- | --- | --- | --- |
-| Initial Variants | XXXX | XXXX | XXXX |
-| Final Variants | 325,155 | 291,482 | 639,434 |
+| **Initial Variants** | XXXX | XXXX | XXXX |
+| **Final Variants** | 325,155 | 291,482 | 639,434 |
 | | | | |
-| Initial samples | XXX | XXX | XXX |
-| Final samples | XXX | XXX | XXX |
+| **Initial samples** | XXX | XXX | XXX |
+| **Final samples** | XXX | XXX | XXX |
 
 ---
 
@@ -361,11 +366,7 @@ put info later - might transfer to QC topic instead of imputation one
 
 ![](https://raw.githubusercontent.com/ccmaues/pgt_images_github/refs/heads/main/08_post_impt.png)
 
-The Rsq is a measure of the quality of imputed genotypes - higher values indicate a better quality - and the value is provided by `Eagle` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score (R²), which is a common threshold used in genetic studies to ensure high-quality imputed genotypes.
-
-<!---
-maybe a ref here...? + check eagle output
---->
+The Rsq is a measure of the quality of imputed genotypes - higher values indicate a better quality - and the value is provided by `Minimac4` in the `TOPMed's imputation pipeline`. We set a threshold of 0.8 for the Rsq score (R²), which is a common threshold used in genetic studies to ensure high-quality imputed genotypes (e.g. **2. INFO filter** below).
 
 *Main Commands:*
 
@@ -376,6 +377,7 @@ for i in {1..22} X; do
   7z e chr_"$i".zip -p'password' -o"$output"
 done
 ```
+
 ### **2. INFO filter:**
 
 ```{bash}
@@ -406,6 +408,10 @@ put info later
 
 Summary
 
+<!---
+put info later
+--->
+
 *Main Command:*
 
 ```{bash}
@@ -424,33 +430,27 @@ plink2 --bfile "$output_INFO_PLINK"_merge_nodup_common --rm-dup exclude-all --ma
 
 *Final SNV number after QC*
 
-| Filter | SNVs | 
-| --- | --- |
-| **Psych** | 9,884,542 |
-| **Omni** | 10,324,705 |
-| **GSA** | 10,138,583 |
+| Filter | SNVs | Samples |
+| --- | --- | --- |
+| **Psych** | 9,884,542 | X |
+| **Omni** | 10,324,705 | X |
+| **GSA** | 10,138,583 | X |
 ---
 
 # 10. Chip dataset merge
 
-Summary
-
-<!---
-put ia better description
---->
+By merging datasets, we ensure that the final separated groups are derived from a unified, high-quality dataset, enabling robust downstream analyses. In this step, the three different chipsets were merged.
 
 *Main Command:*
 
 Refer to `4. Dataset merge` command description.
 
-| Dataset | SNVs |
-| --- | --- |
-| Psych | 9,884,542 |
-| Omni | 10,324,705 |
-| GSA | 10,138,583 |
-| | |
-| Psych + Omni | 9,151,967 |
-| Psych + Omni + Psych | 8,787,496 |
+*Merged dataset*
+
+| Dataset | SNVs | Samples |
+| --- | --- | --- |
+| Psych + Omni | 9,151,967 | 853 |
+| Psych + Omni + Psych | 8,787,496 | 6,523 |
 
 ---
 
