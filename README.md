@@ -243,6 +243,35 @@ plink --bfile $INPUT --genome --min 0.2 --out ${INPUT}_initial_ibd
 sort -rk 10 ${INPUT}_initial_ibd.genome > ${INPUT}_initial_ibd_sorted.genome
 ```
 
+### **2. Remove indels/multi-allelic SNPs and apply missingness filters:**
+```bash
+plink --bfile $INPUT --snps-only just-acgt --make-bed --out ${INPUT}_snps_only
+plink --bfile ${INPUT}_snps_only --geno 0.05 --make-bed --out ${INPUT}_geno_filtered
+plink --bfile ${INPUT}_geno_filtered --mind 0.02 --make-bed --out ${INPUT}_mind_filtered
+```
+### **3.  Heterozygosity and missingness outlier detection:**
+### Use Script heterozygosity_outliers.R in R
+
+### **4.  Sex discrepancy check:**
+```bash
+plink --bfile $INPUT --split-x b37 --make-bed --out ${INPUT}_splitx
+plink --bfile ${INPUT}_splitx --check-sex --out ${INPUT}_sexcheck
+```
+### Run R script to process sex check results
+### Use Script plot_sexcheck.R in R
+
+### **5.  Final QC filters (MAF, HWE):**
+```bash
+plink --bfile $INPUT --geno 0.02 --make-bed --out ${INPUT}_geno_final
+plink --bfile ${INPUT}_geno_final --maf 0.01 --make-bed --out ${INPUT}_maf_filtered
+plink --bfile ${INPUT}_maf_filtered --hwe 1e-10 --make-bed --out ${INPUT}_hwe_filtered
+```
+
+### **6.   Post-QC IBD/PI_HAT check:**
+```bash
+plink --bfile $INPUT --genome --min 0.2 --out ${INPUT}_final_ibd
+sort -rk 10 ${INPUT}_final_ibd.genome > ${INPUT}_final_ibd_sorted.genome
+```
 
 ---
 
