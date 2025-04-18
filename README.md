@@ -202,9 +202,9 @@ sort -o "$dataset2_new"_nodup.snplist "$dataset2_new"_nodup.snplist  # Sort the 
 ### **2. Common SNVs between datasets:**
 
 ```{bash}
-comm -12 "$dataset1_new"_nodup.snplist "$dataset2_new"_nodup.snplist > "$psych_merged".snplist
-plink --bfile "$dataset1_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$dataset1_new"_nodup_common
-plink --bfile "$dataset2_new"_nodup --extract "$psych_merged".snplist --make-bed --out "$dataset2_new"_nodup_common
+comm -12 "$dataset1_new"_nodup.snplist "$dataset2_new"_nodup.snplist > "$dataset_merged".snplist
+plink --bfile "$dataset1_new"_nodup --extract "$dataset_merged".snplist --make-bed --out "$dataset1_new"_nodup_common
+plink --bfile "$dataset2_new"_nodup --extract "$dataset_merged".snplist --make-bed --out "$dataset2_new"_nodup_common
 ```
 
 ### **3. FID update:**
