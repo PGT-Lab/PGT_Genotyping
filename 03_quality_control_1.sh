@@ -28,7 +28,7 @@ plink --bfile "$plink_files_genotyped"_semXY --het --out hetero
 # Run the R script to identify individuals with:
 # - High missing genotype rates (> 3%)
 # - Extreme heterozygosity (> 3 standard deviations from the mean)
-Rscript 04_quality_control_2.R
+Rscript 03_quality_control_2.R
 
 # Remove individuals identified as outliers in the R script (fail-imisshet-qc.txt).
 plink --bfile "$plink_files_genotyped"_ibd --remove fail-imisshet-qc.txt --make-bed --out "$plink_files_genotyped"_semhet
