@@ -287,6 +287,7 @@ This step was performed with `LiftOverPlink` and `LiftOver`. Previous work ([Orm
 
 - [CUP files hg19](https://raw.githubusercontent.com/cathaloruaidh/genomeBuildConversion/master/CUP_FILES/FASTA_BED.ALL_GRCh37.novel_CUPs.bed)
 - [LiftoverPlink](https://github.com/sritchie73/liftOverPlink)
+- [LiftoverPlink](http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/liftOver)
 - [Chain from hg19 to hg38](http://hgdownload.cse.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz)
 
 *Main Command:*
@@ -507,3 +508,4 @@ Summary
 
 ```
 ```
+
