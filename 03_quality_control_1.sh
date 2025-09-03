@@ -34,7 +34,7 @@ Rscript 03_quality_control_2.R
 plink --bfile "$plink_files_genotyped"_semXY --remove fail-imisshet-qc.txt --make-bed --out "$plink_files_genotyped"_semhet
 
 # Perform a sex check to identify discrepancies between reported and genetic sex.
-plink --bfile "$plink_files_genotyped"_semhet --sex-check --out check_XY
+plink --bfile "$plink_files_genotyped"_semhet --check-sex --out check_XY
 
 # Extract individuals with sex discrepancies (marked as "PROBLEM") from the sex check output.
 grep PROBLEM check_XY.sexcheck | awk '{print $1, $2}' > check_sex_fail.txt
