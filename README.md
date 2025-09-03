@@ -294,15 +294,17 @@ This step was performed with `LiftOverPlink` and `LiftOver`. Previous work ([Orm
 ```{bash}
 awk '{print substr($1, 4), $2, $3, "SETID"}' "$liftover"/FASTA_BED.ALL_GRCh37.novel_CUPs.bed > "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed
 
-plink --bfile "$plink_file" --exclude range "$liftover"/ALL_GRCh37_novel_CUPs_plink.bed --output-chr M --make-bed --out "$plink_file"_del1
-plink --bfile "$plink_file"_del1 --recode --output-chr M --out "$plink_file"
-python3 "$liftover"/liftOverPlink.py --bin "$liftover"/liftOver --map "$plink_file".map --out "$path_file"/lifted --chain "$liftover"/hg19ToHg38.over.chain.gz
-python3 "$liftover"/rmBadLifts.py --map "$path_file"/lifted.map --out "$path_file"/good_lifted.map --log "$path_file"/bad_lifted.dat
-cut -f 2 "$path_file"/bad_lifted.dat > "$path_file"/to_exclude.dat
-cut -f 4 "$path_file"/lifted.bed.unlifted | sed "/^#/d" >> "$path_file"/to_exclude.dat 
-plink --file "$plink_file" --recode --out "$path_file"/lifted --exclude "$path_file"/to_exclude.dat 
-plink --ped "$path_file"/lifted.ped --map "$path_file"/good_lifted.map --recode --out "$output"
-plink --ped "$output".ped --map "$output".map --make-bed --out "$output"
+plink --bfile  "$plink_file" --exclude range ALL_GRCh37_novel_CUPs_plink.bed --make-bed --out "$plink_file"_1
+plink --bfile  "$plink_file"_1 --recode --out "$plink_file"_2
+
+python liftOverPlink.py --bin ./liftOver --map "$plink_file"_2.map --out ./lifted --chain ./hg19ToHg38.over.chain.gz
+python rmBadLifts.py --map ./lifted.map --out ./good_lifted.map --log ./bad_lifted.dat
+
+cut -f 2 bad_lifted.dat > to_exclude.dat
+cut -f 4 lifted.bed.unlifted | sed "/^#/d" >> to_exclude.dat
+
+plink --ped "$plink_file"_2.ped --map "$plink_file"_2.map --exclude ./to_exclude.dat --recode --out "$plink_file"_3
+plink --ped "$plink_file"_3.ped --map good_lifted.map --make-bed --out "$plink_file"_hg38
 ```
 
 ---
@@ -508,5 +510,6 @@ Summary
 
 ```
 ```
+
 
 
