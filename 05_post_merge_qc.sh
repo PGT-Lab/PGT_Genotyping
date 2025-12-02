@@ -70,12 +70,12 @@ fi
 # Step 4: Sex Discrepancy Check (Calls R Script)
 # ------------------------------------------------------------------------------
 echo "STEP 4: Checking sex discrepancies..."
-plink --bfile ${INPUT}_het_filtered \
-  --split-x b37 \
+plink --bfile ${INPUT}_het_filtered \ 
+  --split-x b37 \ #ATENTION! IF YOUR DATASET FOR SOME REASON IS ALREADY SPLIT, YOU SHOULD SKIP THIS STEP AND CHANGE THE NAME OF THE FILE IN THE NEXT STEP.
   --make-bed \
   --out ${INPUT}_splitx 2> logs/step4_splitx.log
 
-plink --bfile ${INPUT}_splitx \
+plink --bfile ${INPUT}_splitx \ #ATENTION! IF YOUR DATASET FOR SOME REASON WAS ALREADY SPLIT, YOU SHOULD CHANGE THE INPUT NAME HERE TO ${INPUT}_het_filtered
   --check-sex \
   --out logs/${INPUT}_sexcheck 2> logs/step4_sexcheck.log
 
