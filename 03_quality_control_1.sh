@@ -31,7 +31,7 @@ plink --bfile "$plink_files_genotyped"_semXY --het --out hetero
 Rscript 03_quality_control_2.R
 
 # Remove individuals identified as outliers in the R script (fail-imisshet-qc.txt).
-plink --bfile "$plink_files_genotyped"_semXY --remove fail-imisshet-qc.txt --make-bed --out "$plink_files_genotyped"_semhet
+plink --bfile "$plink_files_genotyped"_QC_mind_ACTG --remove fail-imisshet-qc.txt --make-bed --out "$plink_files_genotyped"_semhet
 
 # Perform a sex check to identify discrepancies between reported and genetic sex.
 plink --bfile "$plink_files_genotyped"_semhet --check-sex --out check_XY
