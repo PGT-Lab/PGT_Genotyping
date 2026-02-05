@@ -53,7 +53,7 @@ plink --bfile ${INPUT}_mind_filtered \
   --out logs/${INPUT}_het 2> logs/step3_het.log
 
 # Call R script for analysis
-Rscript scripts/heterozygosity_outliers.R ${INPUT} 2> logs/step3_r_het.log
+Rscript scripts/05_2_heterozygosity_outliers.R ${INPUT} 2> logs/step3_r_het.log
 
 # Remove outliers if file exists
 if [ -f "logs/${INPUT}_fail_het_imiss.txt" ]; then
@@ -80,7 +80,7 @@ plink --bfile ${INPUT}_splitx \ #ATENTION! IF YOUR DATASET FOR SOME REASON WAS A
   --out logs/${INPUT}_sexcheck 2> logs/step4_sexcheck.log
 
 # Call R script for analysis
-Rscript scripts/sex_check.R ${INPUT} 2> logs/step4_r_sexcheck.log
+Rscript scripts/05_3_sex_check.R ${INPUT} 2> logs/step4_r_sexcheck.log
 
 # Remove discrepancies if file exists
 if [ -f "logs/${INPUT}_sexcheck_problem_samples.txt" ]; then
