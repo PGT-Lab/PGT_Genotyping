@@ -155,7 +155,7 @@ het_rem <- subset(het, het$P_HET > upper_3sd | het$P_HET < lower_3sd)[, 1:2]
 plink --bfile "$genotyped_data"_QC_mind_ACTG --remove fail-imisshet-qc.txt --make-bed --out "$genotyped_data"_semhet
 ```
 
-### **7. sex check:**
+### **6. sex check:**
 
 ```{bash}
 plink --bfile "$genotyped_data"_semhet --sex-check --out check_XY
@@ -483,6 +483,7 @@ Refer to `4. Dataset merge` command description.
 | --- | --- | --- |
 | Psych + Omni | 9,151,967 | 853 |
 | Psych + Omni + Psych | 8,787,496 | 6,523 |
+
 
 
 
