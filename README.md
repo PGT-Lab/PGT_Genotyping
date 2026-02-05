@@ -1,6 +1,6 @@
 # PGT quality control pipeline
 
-### Processing of the genotping array datasets at Laboratory of Integrative Neurosciences (LINC) at UNIFESP.
+### Processing of the genotyping array datasets at Laboratory of Integrative Neurosciences (LINC) at UNIFESP.
 
 Here we provide the reasoning of parameters and steps taken in the pipeline. The pipeline was designed to be run in a `Linux` environment, and the scripts are written in `bash` and `R`. The pipeline is divided into several steps, each of which is described below. For more detailed information, please refer to the individual scripts.
 
@@ -220,7 +220,7 @@ plink --bfile "$dataset1_new"_nodup_common --bmerge "$dataset2_new"_nodup_common
 
 ---
 
-# 5. Quality Control 2
+# 5. Quality Control 2 - post-merge
 
 After merging multiple genotype datasets (e.g., from different batches or studies), perform QC to ensure consistency.
 
@@ -235,7 +235,7 @@ A PLINK-based pipeline for quality control (QC) before genotype imputation, adap
 - Unix shell (`sort`, `bgzip`, etc.)
 
 ### Usage
-Run scripts preImputation_QC.sh, heterozygosity_outliers.R and sex_check.R.
+Run script 05_1_post_merge_qc.sh, that will call 05_2_heterozygosity_outliers.R and 05_3_sex_check.R.
 
 ### **1. Initial IBD/PI_HAT check (relatedness):**
 ```bash
@@ -250,7 +250,7 @@ plink --bfile ${INPUT}_snps_only --geno 0.05 --make-bed --out ${INPUT}_geno_filt
 plink --bfile ${INPUT}_geno_filtered --mind 0.02 --make-bed --out ${INPUT}_mind_filtered
 ```
 ### **3.  Heterozygosity and missingness outlier detection:**
-### Use Script heterozygosity_outliers.R in R
+### Use Script 05_2_heterozygosity_outliers.R in R
 
 ### **4.  Sex discrepancy check:**
 ```bash
@@ -258,7 +258,7 @@ plink --bfile $INPUT --split-x b37 --make-bed --out ${INPUT}_splitx
 plink --bfile ${INPUT}_splitx --check-sex --out ${INPUT}_sexcheck
 ```
 ### Run R script to process sex check results
-### Use Script plot_sexcheck.R in R
+### Use Script 05_3_sexcheck.R in R
 
 ### **5.  Final QC filters (MAF, HWE):**
 ```bash
@@ -484,32 +484,6 @@ Refer to `4. Dataset merge` command description.
 | Psych + Omni | 9,151,967 | 853 |
 | Psych + Omni + Psych | 8,787,496 | 6,523 |
 
----
-
-# 11. Cohort separation
-
-Summary
-
-*Install to run*
-
-*External files to use:*
-
-*Main Command:*
-
-```{bash}
-
-```
-
-```{bash}
-
-```
-
-```{bash}
-
-```
-
-```
-```
 
 
 
