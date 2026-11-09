@@ -20,7 +20,7 @@ For further enquiries, please refer to the authors listed below:
 
 | Authors | Github | Contact |
 | ------- | ------ | ------ |
-| Lucas Toshio Ito | https://github.com/lcstoshio | lucas.toshio@unifesp.br |
+| Lucas Toshio Ito | https://github.com/lcstoshio | lucas.toshio.ito@gmail.com |
 | Adrielle Martins de Oliveira| https://github.com/MartinsAdrielle | adrielle.martins@unifesp.br |
 | Gustavo Satoru Kajitani | https://github.com/gkajitani | g.kajitani@unifesp.br |
 
